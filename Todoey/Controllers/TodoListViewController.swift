@@ -12,7 +12,8 @@ class TodoListViewController: UITableViewController {
 
     var itemArray = [Item]()
     
-    let defalults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
+    
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     
@@ -28,7 +29,7 @@ class TodoListViewController: UITableViewController {
         
         cell.textLabel?.text = item.title
         
-        cell.accessoryType = .checkmark = item.done? .checkmark : .none
+        cell.accessoryType = item.done ? .checkmark : .none
     
         return cell
     }
@@ -40,9 +41,7 @@ class TodoListViewController: UITableViewController {
     
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        tableView.reloadData()
-        
-    
+        saveItems()
         
     }
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -58,11 +57,8 @@ class TodoListViewController: UITableViewController {
             newItem.title = textField.text!
             
             self.itemArray.append(newItem)
-    
-            self.defalults.set(self.itemArray, forKey: "TodoListArray")
             
-            self.tableView.reloadData()
-            
+            self.saveItems()
         }
         
         alert.addTextField { (alertTextField) in
@@ -77,21 +73,43 @@ class TodoListViewController: UITableViewController {
     
     }
     
+    func saveItems () {
+        
+        let encoder = PropertyListEncoder()
+        
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }
+        catch {
+            print(error)
+        }
+        tableView.reloadData()
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do{
+            itemArray = try decoder.decode([Item].self, from: data)
+            }
+            catch{
+                print("Error decoding plist \(error)")
+            }
+            }
+            
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        let newItem = Item()
-        newItem.title = "L1.0"
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "L2.0"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "L3.0"
-        itemArray.append(newItem3)
+
+        loadItems()
+
+        //if let items = defalults.array(forKey: "TodoListArray") as? [Item] {
+        //  itemArray = items
+        //}
     }
 }
 
