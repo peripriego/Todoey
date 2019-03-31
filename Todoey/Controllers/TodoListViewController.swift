@@ -42,8 +42,9 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         tableView.deselectRow(at: indexPath, animated: true)
-//context.delete(itemArray[indexPath.row])
-//itemArray.remove(at: indexPath.row)
+
+        //context.delete(itemArray[indexPath.row])
+        //itemArray.remove(at: indexPath.row)
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
@@ -82,7 +83,7 @@ class TodoListViewController: UITableViewController {
     
     }
     
-    
+// MARK: - Save/Load functions
     
     func saveItems () {
         
@@ -95,9 +96,7 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }
     
-    func loadItems() {
-      
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
         
         do {
         itemArray = try context.fetch(request)
@@ -105,6 +104,7 @@ class TodoListViewController: UITableViewController {
         catch {
             print(error)
         }
+        tableView.reloadData()
     }
     
   
@@ -121,27 +121,32 @@ class TodoListViewController: UITableViewController {
 
 extension TodoListViewController : UISearchBarDelegate {
     
-    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+    func searchBarButtonClicked(_ searchBar: UISearchBar) {
         
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
-        print(searchBar.text!)
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
-            let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        request.predicate = predicate
-        
-        let sortDescriptr   = NSSortDescriptor(key: "title", ascending: true)
-        
-        request.sortDescriptors = [sortDescriptr]
-        
-        do {
-            itemArray = try context.fetch(request)
-        }
-        catch {
-            print(error)
-        }
+        loadItems(with: request)
+//
     }
     
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchBar.text?.count == 0 {
+            loadItems()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
+            
+        }
+        else {
+            
+        }
+    }
     
 }
