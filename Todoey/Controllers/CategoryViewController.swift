@@ -31,7 +31,7 @@ class CategoryViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "no cattegories added"
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Cttegories Added"
         
         return cell
     }
